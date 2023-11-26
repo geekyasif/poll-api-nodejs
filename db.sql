@@ -55,8 +55,8 @@ SELECT
         o.title SEPARATOR ', '
     ) AS `options`
 from users as u
-    LEFT JOIN queries AS q on u.id = q.uid
-    LEFT JOIN options AS o on o.query_id = q.id
+    JOIN queries AS q on u.id = q.uid
+    JOIN options AS o on o.query_id = q.id
 GROUP BY
     q.title,
     u.name,
@@ -75,11 +75,26 @@ SELECT
         o.title SEPARATOR ', '
     ) AS `options`
 from users as u
-    LEFT JOIN queries AS q on u.id = q.uid
-    LEFT JOIN options AS o on o.query_id = q.id
+    JOIN queries AS q on u.id = q.uid
+    JOIN options AS o on o.query_id = q.id
 where q.id = 5
 GROUP BY
     q.title,
     u.name,
     u.id,
     q.id;
+
+-- get all polls by user id
+
+select
+    q.title AS title,
+    q.id AS query_id,
+    GROUP_CONCAT(
+        o.id,
+        ":",
+        o.title SEPARATOR ', '
+    ) AS `options`
+from queries as q
+    join options as o on q.id = o.query_id
+where uid = 2
+GROUP BY q.title, q.id;

@@ -10,6 +10,8 @@ async function AddPollController(req, res) {
       return res.status(201).json({ error: response.error });
     }
 
+    console.log(response);
+
     const query_id = response.insertId;
     options.forEach((option) => {
       conn.query(

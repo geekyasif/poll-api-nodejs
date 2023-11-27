@@ -106,6 +106,34 @@ GROUP BY q.title, q.id;
 -- ANALYTICS
 
 SELECT
+    q.id AS query_id,
+    q.title AS title,
+    GROUP_CONCAT(
+        o.id,
+        ":",
+        o.title,
+        "(",
+        COALESCE(option_count, 0),
+        " votes)" SEPARATOR ', '
+    ) AS options
+FROM users AS u
+    JOIN queries AS q ON u.id = q.uid
+    JOIN options AS o ON o.query_id = q.id
+    LEFT JOIN (
+        SELECT
+            query_id,
+            option_id,
+            COUNT(DISTINCT id) AS option_count
+        FROM users_polls
+        GROUP BY
+            query_id,
+            option_id
+    ) AS up ON up.query_id = q.id
+    AND up.option_id = o.id
+GROUP BY q.title, q.id
+ORDER BY q.id;
+
+SELECT
     u.name AS user_name,
     q.title AS title,
     q.id AS query_id,
@@ -116,7 +144,8 @@ SELECT
         "(",
         COALESCE(option_count, 0),
         " votes)" SEPARATOR ', '
-    ) AS options
+    ) AS options,
+    SUM(option_count) AS total_votes
 FROM users AS u
     JOIN queries AS q ON u.id = q.uid
     JOIN options AS o ON o.query_id = q.id

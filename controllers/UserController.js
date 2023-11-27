@@ -1,13 +1,13 @@
-const conn = require("../db");
+const conn = require("../config/db");
 
 class UserController {
+  // Poll Vote By User
   static vote(req, res) {
     const { uid, query_id, option_id } = req.body;
 
     // Search if the poll exists
-    const selectQuery =
-      "SELECT * FROM users_polls WHERE uid = ? AND query_id = ?";
-    conn.query(selectQuery, [uid, query_id, option_id], (error, result) => {
+    const selectQuery = `SELECT * FROM users_polls WHERE uid = ${uid} AND query_id = ${query_id};`;
+    conn.query(selectQuery, (error, result) => {
       if (error) {
         console.error("Error:", error.message);
         return res.status(500).json({ error: error.message });
@@ -15,8 +15,8 @@ class UserController {
 
       // If exists, then update
       if (result.length !== 0) {
-        const updateQuery = "UPDATE users_polls SET option_id = ? WHERE id = ?";
-        conn.query(updateQuery, [option_id, result[0].id], (error) => {
+        const updateQuery = `UPDATE users_polls SET option_id = ${option_id} WHERE id = ${result[0].id};`;
+        conn.query(updateQuery, (error) => {
           if (error) {
             console.error("Error:", error.message);
             return res.status(500).json({ error: error.message });
@@ -25,9 +25,8 @@ class UserController {
         });
       } else {
         // If not exists, insert
-        const insertQuery =
-          "INSERT INTO users_polls (uid, query_id, option_id) VALUES (?, ?, ?)";
-        conn.query(insertQuery, [uid, query_id, option_id], (error) => {
+        const insertQuery = `INSERT INTO users_polls (uid, query_id, option_id) VALUES (${uid}, ${query_id}, ${option_id})`;
+        conn.query(insertQuery, (error) => {
           if (error) {
             console.error("Error:", error.message);
             return res.status(500).json({ error: error.message });

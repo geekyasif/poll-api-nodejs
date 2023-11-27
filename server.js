@@ -1,7 +1,4 @@
 const express = require("express");
-const conn = require("./db");
-const serializedPolls = require("./utils/serializedPolls");
-const AddQuery = require("./utils/AddQuery");
 const routes = require("./routes/routes");
 
 const app = express();

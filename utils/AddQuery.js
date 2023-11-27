@@ -1,4 +1,4 @@
-const conn = require("../db");
+const conn = require("../config/db");
 
 function AddQuery(uid, title) {
   return new Promise((resolve, reject) => {

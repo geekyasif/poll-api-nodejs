@@ -1,5 +1,9 @@
 -- Active: 1686691449262@@127.0.0.1@3306@poll
 
+CREATE DATABASE poll;
+
+USE poll;
+
 CREATE TABLE
     users (
         id INT NOT NULL AUTO_INCREMENT,
@@ -10,21 +14,36 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    queries (
+    polls (
         id INT NOT NULL AUTO_INCREMENT,
-        uid int,
-        title text,
+        uid INT NOT NULL,
+        title VARCHAR(250),
+        category VARCHAR(100),
+        start_date VARCHAR(50),
+        end_date VARCHAR(50),
+        minimum_reward INT,
+        maximum_reward INT,
         PRIMARY KEY(id),
-        FOREIGN KEY(uid) REFERENCES users(id)
+        FOREIGN KEY(uid) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+CREATE TABLE
+    questions (
+        id INT NOT NULL AUTO_INCREMENT,
+        pid int,
+        title text,
+        type text,
+        PRIMARY KEY(id),
+        FOREIGN KEY(pid) REFERENCES polls(id) ON DELETE CASCADE
     );
 
 CREATE TABLE
     options (
         id INT NOT NULL AUTO_INCREMENT,
-        query_id INT,
+        qid INT,
         title TEXT,
         PRIMARY KEY(id),
-        FOREIGN KEY(query_id) REFERENCES queries(id)
+        FOREIGN KEY(qid) REFERENCES questions(id) ON DELETE CASCADE
     )
 
 CREATE TABLE
@@ -41,13 +60,17 @@ CREATE TABLE
 
 SELECT * FROM users;
 
-SELECT * FROM queries;
+SELECT * FROM polls;
+
+SELECT * FROM questions;
 
 SELECT * FROM options;
 
 SELECT * FROM users_polls;
 
 DELETE FROM users_polls;
+
+DELETE FROM queries;
 
 SELECT
     u.name as user_name,

@@ -1,21 +1,117 @@
 const conn = require("../config/db");
-const AddQuery = require("../utils/AddQuery");
+const AddPoll = require("../utils/AddPoll");
+const AddQuestion = require("../utils/AddQuestion");
+const UpdateQuestion = require("../utils/UpdateQuestion");
 const serializedAnalytics = require("../utils/serializedAnalytics");
 
 class PollController {
   // Add New Poll
   static async AddPoll(req, res) {
     try {
-      const { uid, title, options } = req.body;
+      const {
+        uid,
+        title,
+        category,
+        start_date,
+        end_date,
+        minimum_reward,
+        maximum_reward,
+        questions,
+      } = req.body;
 
-      const response = await AddQuery(uid, title);
+      // adding the poll
+      const response = await AddPoll(
+        uid,
+        title,
+        category,
+        start_date,
+        end_date,
+        minimum_reward,
+        maximum_reward
+      );
+
+      // if error while adding the poll
       if (response.error) {
         return res.status(201).json({ error: response.error });
       }
 
-      const query_id = response.insertId;
+      // getting the poll id
+      const pid = response.insertId;
+
+      // adding the queries
+      questions.forEach(async (question) => {
+        // adding the single query
+        const response = await AddQuestion(pid, question.title, question.type);
+
+        // getting the query_id
+        const qid = response.insertId;
+
+        // addding the query option
+        question.options.forEach((option) => {
+          const insertQuery = `INSERT INTO options (qid, title) values (${qid}, '${option}')`;
+          conn.query(insertQuery, (error) => {
+            if (error) {
+              return res.status(500).json({ error: error });
+            }
+          });
+        });
+      });
+
+      return res.status(201).json({ data: "Inserted successfully!" });
+    } catch (error) {
+      return res.status(201).json({ data: error });
+    }
+  }
+
+  // Update the Poll
+  static async UpdatePoll(req, res) {
+    try {
+      const { pid } = req.params;
+      const {
+        title,
+        category,
+        minimum_reward,
+        maximum_reward,
+        start_date,
+        end_date,
+      } = req.body;
+
+      const updateQuery = `UPDATE polls SET title = '${title}', category = '${category}', minimum_reward = '${minimum_reward}', maximum_reward = '${maximum_reward}', start_date = '${start_date}', end_date = '${end_date}' WHERE id = ${pid};`;
+
+      conn.query(updateQuery, (error) => {
+        if (error) {
+          return res.status(500).json({ error });
+        }
+
+        return res.status(204);
+      });
+    } catch (error) {
+      return res.status(500).json({ error });
+    }
+  }
+
+  static async QuestionUpdate(req, res) {
+    try {
+      const { qid, pid } = req.params;
+      const { title, type, options } = req.body;
+
+      const response = await UpdateQuestion(qid, pid, title, type);
+
+      if (response.error) {
+        return res.status(201).json({ error: response.error });
+      }
+
+      // deleting old options
+      const deleteQuery = `DELETE FROM options WHERE qid = ${qid};`;
+      conn.query(deleteQuery, (error) => {
+        if (error) {
+          return res.status(500).json({ error });
+        }
+      });
+
+      // addding the new option
       options.forEach((option) => {
-        const insertQuery = `INSERT INTO options (query_id, title) values (${query_id}, '${option}')`;
+        const insertQuery = `INSERT INTO options (qid, title) values (${qid}, '${option}')`;
         conn.query(insertQuery, (error) => {
           if (error) {
             return res.status(500).json({ error: error });
@@ -23,9 +119,9 @@ class PollController {
         });
       });
 
-      return res.status(201).json({ data: "Inserted successfully!" });
+      return res.status(204);
     } catch (error) {
-      return res.status(201).json({ data: error });
+      return res.status(500).json({ error });
     }
   }
 

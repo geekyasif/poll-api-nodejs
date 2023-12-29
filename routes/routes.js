@@ -8,8 +8,14 @@ const AuthController = require("../controllers/AuthController");
 router.post("/register", AuthController.Register);
 router.post("/login", AuthController.Login);
 
-// poll creation route
+// 1 - poll creation route
 router.post("/polls", PollController.AddPoll);
+
+// 3.a - poll update route
+router.patch("/polls/:pid", PollController.UpdatePoll);
+
+// 3.b -
+router.patch("/questions/:qid/polls/:pid", PollController.QuestionUpdate);
 
 // getting all polls route
 router.get("/polls", PollController.GetAllPolls);
